@@ -6,6 +6,8 @@ on:
       - 'main'
       - 'stable-*'
       - 'feat/opensource'
+      - 'Basic'
+      - 'MVP'
     paths:
       - 'Gemfile*'
       - '.ruby-version'

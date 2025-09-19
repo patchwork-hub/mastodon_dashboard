@@ -3,6 +3,10 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 2 * * *' # run at 2 AM UTC
+  push:
+    branches:
+      - 'Basic'
+      - 'MVP'
 
 permissions:
   contents: read
@@ -16,9 +20,27 @@ jobs:
         env:
           TZ: Etc/UTC
         run: |
-          echo patchwork_dashboard_version_prerelease=nightly.$(date +'%Y-%m-%d')>> $GITHUB_OUTPUT
+          # Determine image suffix based on branch
+          BRANCH_NAME="${{ github.ref_name }}"
+          DATE_SUFFIX="nightly.$(date +'%Y-%m-%d')"
+          
+          if [[ "$BRANCH_NAME" == "Basic" ]]; then
+            echo "patchwork_dashboard_version_prerelease=${DATE_SUFFIX}-basic" >> $GITHUB_OUTPUT
+            echo "docker_repo=newsmast/patchwork_dashboard_basic" >> $GITHUB_OUTPUT
+            echo "ghcr_repo=ghcr.io/patchwork-hub/patchwork_dashboard_basic" >> $GITHUB_OUTPUT
+          elif [[ "$BRANCH_NAME" == "MVP" ]]; then
+            echo "patchwork_dashboard_version_prerelease=${DATE_SUFFIX}-mvp" >> $GITHUB_OUTPUT
+            echo "docker_repo=newsmast/patchwork_dashboard_mvp" >> $GITHUB_OUTPUT
+            echo "ghcr_repo=ghcr.io/patchwork-hub/patchwork_dashboard_mvp" >> $GITHUB_OUTPUT
+          else
+            echo "patchwork_dashboard_version_prerelease=${DATE_SUFFIX}" >> $GITHUB_OUTPUT
+            echo "docker_repo=newsmast/patchwork_dashboard" >> $GITHUB_OUTPUT
+            echo "ghcr_repo=ghcr.io/patchwork-hub/patchwork_dashboard" >> $GITHUB_OUTPUT
+          fi
     outputs:
       prerelease: ${{ steps.version_vars.outputs.patchwork_dashboard_version_prerelease }}
+      docker_repo: ${{ steps.version_vars.outputs.docker_repo }}
+      ghcr_repo: ${{ steps.version_vars.outputs.ghcr_repo }}
 
   build-image:
     needs: compute-suffix
@@ -27,8 +49,8 @@ jobs:
       file_to_build: Dockerfile
       cache: false
       push_to_images: |
-        newsmast/patchwork_dashboard
-        ghcr.io/patchwork-hub/patchwork_dashboard
+        ${{ needs.compute-suffix.outputs.docker_repo }}
+        ${{ needs.compute-suffix.outputs.ghcr_repo }}
       version_prerelease: ${{ needs.compute-suffix.outputs.prerelease }}
       labels: |
         org.opencontainers.image.description=Nightly build image used for testing purposes

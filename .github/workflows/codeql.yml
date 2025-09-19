@@ -7,10 +7,14 @@ on:
       - 'main'
       - 'stable-*'
       - 'feat/opensource'
+      - 'Basic'
+      - 'MVP'
   pull_request:
     branches:
       - 'main'
       - 'stable-*'
+      - 'Basic'
+      - 'MVP'
   schedule:
     - cron: '22 6 * * 1'
 

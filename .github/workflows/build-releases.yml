@@ -9,13 +9,39 @@ permissions:
   packages: write
 
 jobs:
+  compute-image-name:
+    runs-on: ubuntu-latest
+    steps:
+      - id: image_vars
+        run: |
+          # Extract version suffix from tag (e.g., v1.0.0-basic -> basic)
+          TAG_NAME="${{ github.ref_name }}"
+          if [[ "$TAG_NAME" == *"-basic" ]]; then
+            echo "image_suffix=basic" >> $GITHUB_OUTPUT
+            echo "docker_repo=newsmast/patchwork_dashboard_basic" >> $GITHUB_OUTPUT
+            echo "ghcr_repo=ghcr.io/patchwork-hub/patchwork_dashboard_basic" >> $GITHUB_OUTPUT
+          elif [[ "$TAG_NAME" == *"-mvp" ]]; then
+            echo "image_suffix=mvp" >> $GITHUB_OUTPUT
+            echo "docker_repo=newsmast/patchwork_dashboard_mvp" >> $GITHUB_OUTPUT
+            echo "ghcr_repo=ghcr.io/patchwork-hub/patchwork_dashboard_mvp" >> $GITHUB_OUTPUT
+          else
+            echo "image_suffix=main" >> $GITHUB_OUTPUT
+            echo "docker_repo=newsmast/patchwork_dashboard" >> $GITHUB_OUTPUT
+            echo "ghcr_repo=ghcr.io/patchwork-hub/patchwork_dashboard" >> $GITHUB_OUTPUT
+          fi
+    outputs:
+      image_suffix: ${{ steps.image_vars.outputs.image_suffix }}
+      docker_repo: ${{ steps.image_vars.outputs.docker_repo }}
+      ghcr_repo: ${{ steps.image_vars.outputs.ghcr_repo }}
+
   build-image:
+    needs: compute-image-name
     uses: ./.github/workflows/build-container-image.yml
     with:
       file_to_build: Dockerfile
       push_to_images: |
-        newsmast/patchwork_dashboard
-        ghcr.io/patchwork-hub/patchwork_dashboard
+        ${{ needs.compute-image-name.outputs.docker_repo }}
+        ${{ needs.compute-image-name.outputs.ghcr_repo }}
       # Do not use cache when building releases, so apt update is always ran and the release always contain the latest packages
       cache: false
       # Tag with latest for all releases
