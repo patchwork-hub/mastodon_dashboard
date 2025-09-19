@@ -7,6 +7,8 @@ on:
     branches:
       - 'Basic'
       - 'MVP'
+      - 'improve-release-v2'  # Temporary for testing
+      - 'feat/opensource'     # Temporary for testing
 
 permissions:
   contents: read
@@ -24,18 +26,24 @@ jobs:
           BRANCH_NAME="${{ github.ref_name }}"
           DATE_SUFFIX="nightly.$(date +'%Y-%m-%d')"
           
+          echo "Branch: $BRANCH_NAME"
+          echo "Date suffix: $DATE_SUFFIX"
+          
           if [[ "$BRANCH_NAME" == "Basic" ]]; then
             echo "patchwork_dashboard_version_prerelease=${DATE_SUFFIX}-basic" >> $GITHUB_OUTPUT
             echo "docker_repo=newsmast/patchwork_dashboard_basic" >> $GITHUB_OUTPUT
             echo "ghcr_repo=ghcr.io/patchwork-hub/patchwork_dashboard_basic" >> $GITHUB_OUTPUT
+            echo "Building for Basic branch"
           elif [[ "$BRANCH_NAME" == "MVP" ]]; then
             echo "patchwork_dashboard_version_prerelease=${DATE_SUFFIX}-mvp" >> $GITHUB_OUTPUT
             echo "docker_repo=newsmast/patchwork_dashboard_mvp" >> $GITHUB_OUTPUT
             echo "ghcr_repo=ghcr.io/patchwork-hub/patchwork_dashboard_mvp" >> $GITHUB_OUTPUT
+            echo "Building for MVP branch"
           else
             echo "patchwork_dashboard_version_prerelease=${DATE_SUFFIX}" >> $GITHUB_OUTPUT
             echo "docker_repo=newsmast/patchwork_dashboard" >> $GITHUB_OUTPUT
             echo "ghcr_repo=ghcr.io/patchwork-hub/patchwork_dashboard" >> $GITHUB_OUTPUT
+            echo "Building for default branch: $BRANCH_NAME"
           fi
     outputs:
       prerelease: ${{ steps.version_vars.outputs.patchwork_dashboard_version_prerelease }}
@@ -59,5 +67,5 @@ jobs:
       tags: |
         type=raw,value=edge
         type=raw,value=nightly
-        type=schedule,pattern=${{ needs.compute-suffix.outputs.prerelease }}
+        type=raw,value=${{ needs.compute-suffix.outputs.prerelease }}
     secrets: inherit
