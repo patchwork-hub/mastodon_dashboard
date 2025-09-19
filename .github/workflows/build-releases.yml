@@ -22,17 +22,17 @@ jobs:
             echo "image_suffix=basic" >> $GITHUB_OUTPUT
             echo "docker_repo=newsmast/patchwork_dashboard_basic" >> $GITHUB_OUTPUT
             echo "ghcr_repo=ghcr.io/patchwork-hub/patchwork_dashboard_basic" >> $GITHUB_OUTPUT
-            echo "Detected BASIC release"
+            echo "Detected basic release"
           elif [[ "$TAG_NAME" == *"-mvp" ]]; then
             echo "image_suffix=mvp" >> $GITHUB_OUTPUT
             echo "docker_repo=newsmast/patchwork_dashboard_mvp" >> $GITHUB_OUTPUT
             echo "ghcr_repo=ghcr.io/patchwork-hub/patchwork_dashboard_mvp" >> $GITHUB_OUTPUT
-            echo "Detected MVP release"
+            echo "Detected mvp release"
           else
             echo "image_suffix=main" >> $GITHUB_OUTPUT
             echo "docker_repo=newsmast/patchwork_dashboard" >> $GITHUB_OUTPUT
             echo "ghcr_repo=ghcr.io/patchwork-hub/patchwork_dashboard" >> $GITHUB_OUTPUT
-            echo "Detected MAIN release"
+            echo "Detected main release"
           fi
           
           echo "Will push to docker repo: $(grep 'docker_repo=' <<< $(cat $GITHUB_OUTPUT) | cut -d'=' -f2)"

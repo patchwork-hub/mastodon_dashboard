@@ -22,17 +22,17 @@ jobs:
           echo "Branch: $BRANCH_NAME"
           echo "Date suffix: $DATE_SUFFIX"
           
-          if [[ "$BRANCH_NAME" == "Basic" ]]; then
+          if [[ "$BRANCH_NAME" == "basic" ]]; then
             echo "patchwork_dashboard_version_prerelease=${DATE_SUFFIX}-basic" >> $GITHUB_OUTPUT
             echo "docker_repo=newsmast/patchwork_dashboard_basic" >> $GITHUB_OUTPUT
             echo "ghcr_repo=ghcr.io/patchwork-hub/patchwork_dashboard_basic" >> $GITHUB_OUTPUT
-            echo "Building for Basic branch"
+            echo "Building for basic branch"
             echo "Prerelease version will be: ${DATE_SUFFIX}-basic"
-          elif [[ "$BRANCH_NAME" == "MVP" ]]; then
+          elif [[ "$BRANCH_NAME" == "mvp" ]]; then
             echo "patchwork_dashboard_version_prerelease=${DATE_SUFFIX}-mvp" >> $GITHUB_OUTPUT
             echo "docker_repo=newsmast/patchwork_dashboard_mvp" >> $GITHUB_OUTPUT
             echo "ghcr_repo=ghcr.io/patchwork-hub/patchwork_dashboard_mvp" >> $GITHUB_OUTPUT
-            echo "Building for MVP branch"
+            echo "Building for mvp branch"
             echo "Prerelease version will be: ${DATE_SUFFIX}-mvp"
           else
             echo "patchwork_dashboard_version_prerelease=${DATE_SUFFIX}" >> $GITHUB_OUTPUT
