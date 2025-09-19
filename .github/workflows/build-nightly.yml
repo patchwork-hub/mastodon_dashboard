@@ -27,17 +27,25 @@ jobs:
             echo "docker_repo=newsmast/patchwork_dashboard_basic" >> $GITHUB_OUTPUT
             echo "ghcr_repo=ghcr.io/patchwork-hub/patchwork_dashboard_basic" >> $GITHUB_OUTPUT
             echo "Building for Basic branch"
+            echo "Prerelease version will be: ${DATE_SUFFIX}-basic"
           elif [[ "$BRANCH_NAME" == "MVP" ]]; then
             echo "patchwork_dashboard_version_prerelease=${DATE_SUFFIX}-mvp" >> $GITHUB_OUTPUT
             echo "docker_repo=newsmast/patchwork_dashboard_mvp" >> $GITHUB_OUTPUT
             echo "ghcr_repo=ghcr.io/patchwork-hub/patchwork_dashboard_mvp" >> $GITHUB_OUTPUT
             echo "Building for MVP branch"
+            echo "Prerelease version will be: ${DATE_SUFFIX}-mvp"
           else
             echo "patchwork_dashboard_version_prerelease=${DATE_SUFFIX}" >> $GITHUB_OUTPUT
             echo "docker_repo=newsmast/patchwork_dashboard" >> $GITHUB_OUTPUT
             echo "ghcr_repo=ghcr.io/patchwork-hub/patchwork_dashboard" >> $GITHUB_OUTPUT
             echo "Building for default branch: $BRANCH_NAME"
+            echo "Prerelease version will be: ${DATE_SUFFIX}"
           fi
+          
+          # Debug output
+          echo "Final outputs:"
+          echo "prerelease=$(grep 'patchwork_dashboard_version_prerelease=' $GITHUB_OUTPUT | cut -d'=' -f2)"
+          echo "docker_repo=$(grep 'docker_repo=' $GITHUB_OUTPUT | cut -d'=' -f2)"
     outputs:
       prerelease: ${{ steps.version_vars.outputs.patchwork_dashboard_version_prerelease }}
       docker_repo: ${{ steps.version_vars.outputs.docker_repo }}
@@ -61,4 +69,5 @@ jobs:
         type=raw,value=edge
         type=raw,value=nightly
         type=raw,value=${{ needs.compute-suffix.outputs.prerelease }}
+        type=raw,value=debug-${{ github.run_number }}
     secrets: inherit
