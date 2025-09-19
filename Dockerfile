@@ -49,8 +49,11 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV app_path=/usr/app
 ENV RAILS_SERVE_STATIC_FILES=true
 ENV RAILS_LOG_TO_STDOUT=true
-ENV LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2 
+# Remove LD_PRELOAD from here, will be set in entrypoint script
 ENV RAILS_ENV="production"
+
+# Create patchwork user and group
+RUN groupadd -r patchwork && useradd -r -g patchwork -d $app_path -s /bin/bash patchwork
 
 WORKDIR $app_path
 
@@ -66,16 +69,26 @@ RUN bundle install --jobs 4
 # Copy the rest of the application
 ADD . $app_path
 
-# Precompile Assets
+# Copy supervisord configuration (as root)
+COPY ./supervisord.conf /etc/supervisord.conf
+
+# Create directories that patchwork user needs to write to
+RUN mkdir -p $app_path/tmp/pids $app_path/log $app_path/storage
+
+# Set Executable Permission for Entrypoint (as root)
+RUN chmod +x /usr/app/docker-entrypoint.sh
+
+# Change ownership to patchwork user
+RUN chown -R patchwork:patchwork $app_path
+
+# Switch to patchwork user
+USER patchwork
+
+# Precompile Assets (as patchwork user)
 RUN bundle exec rake assets:clean
 RUN bundle exec rake assets:precompile
 
-# Set Executable Permission for Entrypoint
-RUN chmod +x /usr/app/docker-entrypoint.sh
 ENTRYPOINT ["/usr/app/docker-entrypoint.sh"]
-
-# Copy supervisord configuration
-COPY ./supervisord.conf /etc/supervisord.conf
 
 # Start supervisord
 CMD ["supervisord", "-c", "/etc/supervisord.conf"]
