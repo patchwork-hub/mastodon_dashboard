@@ -7,9 +7,6 @@ on:
     branches:
       - 'Basic'
       - 'MVP'
-      - 'improve-release-v2'  # Temporary for testing
-      - 'feat/opensource'     # Temporary for testing
-
 permissions:
   contents: read
   packages: write
