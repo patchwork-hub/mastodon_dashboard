@@ -72,6 +72,7 @@ jobs:
         with:
           images: ${{ inputs.push_to_images }}
           flavor: ${{ inputs.flavor }}
+          tags: ${{ inputs.tags }}
           labels: ${{ inputs.labels }}
 
       - name: Build and push by digest
