@@ -4,11 +4,12 @@ module Api
   module V1
     class ChannelsController < ApiController
       skip_before_action :verify_key!
-      before_action :check_authorization_header, only: [:channel_detail, :channel_feeds, :newsmast_channels, :my_channel, :mo_me_channels, :patchwork_demo_channels]
+      before_action :check_authorization_header, only: [:channel_detail, :channel_feeds, :newsmast_channels, :my_channel, :mo_me_channels, :patchwork_demo_channels, :toot_channels, :bristol_cable_channels]
       before_action :set_channel, only: [:channel_detail, :channel_feeds]
 
       DEFAULT_MO_ME_CHANNELS = [
         { slug: 'mediarevolution', channel_type: Community.channel_types[:channel] },
+        { slug: 'newsclubnetwork', channel_type: Community.channel_types[:channel_feed] },
         { slug: 'activism-civil-rights', channel_type: Community.channel_types[:newsmast] },
         { slug: 'climate-change', channel_type: Community.channel_types[:newsmast]},
         { slug: 'politics', channel_type: Community.channel_types[:newsmast]},
@@ -18,6 +19,33 @@ module Api
       ].freeze
 
       DEFAULT_PATCHWORK_DEMO_CHANNELS = [
+        { slug: 'trees', channel_type: Community.channel_types[:channel_feed] },
+        { slug: 'podcasting', channel_type: Community.channel_types[:channel_feed] },
+        { slug: 'greens', channel_type: Community.channel_types[:channel]},
+        { slug: 'fedibookclub', channel_type: Community.channel_types[:channel_feed]},
+        { slug: 'NoticiasBrasil', channel_type: Community.channel_types[:channel_feed]},
+        { slug: 'RenewedResistance', channel_type: Community.channel_types[:channel]}
+      ].freeze
+
+      DEFAULT_TOOT_CHANNELS = [
+        { slug: 'walesnews', channel_type: Community.channel_types[:channel_feed] },
+        { slug: 'newyddion', channel_type: Community.channel_types[:channel_feed] },
+        { slug: 'biodiversity-rewilding', channel_type: Community.channel_types[:newsmast] },
+        { slug: 'books-literature', channel_type: Community.channel_types[:newsmast] },
+        { slug: 'football', channel_type: Community.channel_types[:newsmast] },
+        { slug: 'humour', channel_type: Community.channel_types[:newsmast] },
+        { slug: 'movies', channel_type: Community.channel_types[:newsmast] },
+        { slug: 'music', channel_type: Community.channel_types[:newsmast] },
+        { slug: 'nature-wildlife', channel_type: Community.channel_types[:newsmast] },
+        { slug: 'pets', channel_type: Community.channel_types[:newsmast] },
+        { slug: 'photography', channel_type: Community.channel_types[:newsmast] },
+        { slug: 'sport', channel_type: Community.channel_types[:newsmast] }
+      ].freeze
+
+      DEFAULT_BRISTOL_CABLE_CHANNELS = [
+        { slug: 'bristol', channel_type: Community.channel_types[:channel_feed] },
+        { slug: 'activism-civil-rights', channel_type: Community.channel_types[:newsmast] },
+        { slug: 'climate-change', channel_type: Community.channel_types[:newsmast]},
         { slug: 'trees', channel_type: Community.channel_types[:channel_feed] },
         { slug: 'podcasting', channel_type: Community.channel_types[:channel_feed] },
         { slug: 'greens', channel_type: Community.channel_types[:channel]},
@@ -106,6 +134,38 @@ module Api
         render_custom_channels(DEFAULT_PATCHWORK_DEMO_CHANNELS)
       end
 
+      def toot_channels
+        render_custom_channels(DEFAULT_TOOT_CHANNELS)
+      end
+
+      def bristol_cable_channels
+        render_custom_channels(DEFAULT_BRISTOL_CABLE_CHANNELS)
+      end
+
+      def starter_packs_channels
+        starter_packs_channels = load_json_data('starter_pack_list.json')
+
+        render json: { data: starter_packs_channels }
+      end
+
+      def starter_packs_detail
+        channel_id = params[:id]
+        starter_packs_channels = load_json_data('starter_pack_list.json')
+        channel = starter_packs_channels.find { |ch| ch["id"] == channel_id }
+
+        unless channel
+          render json: { error: "Channel not found" }, status: :not_found and return
+        end
+
+        followers_file = "starter_pack_#{channel_id}.json"
+        followers = load_json_data(followers_file)
+
+        render json: {
+          channel: channel,
+          followers: followers
+        }
+      end
+
       private
 
       def set_channel
@@ -157,6 +217,19 @@ module Api
         render json: Api::V1::ChannelSerializer.new(sorted_communities, { params: { current_account: account } }).serializable_hash.to_json
       end
 
+      def load_json_data(filename)
+        file_path = Rails.root.join('config', 'data', filename)
+        return [] unless File.exist?(file_path)
+
+        # Derive cache key from filename (remove extension)
+        cache_key = File.basename(filename, '.json')
+        modified_at = File.mtime(file_path).to_i
+        full_cache_key = "#{cache_key}_#{modified_at}"
+
+        Rails.cache.fetch(full_cache_key, expires_in: 1.hour) do
+          JSON.parse(File.read(file_path))
+        end
+      end
     end
   end
 end

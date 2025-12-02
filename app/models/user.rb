@@ -72,14 +72,6 @@ class User < ApplicationRecord
 
   validates :email, uniqueness: true, presence: true
 
-  # Validate locale field to ensure it's one of the supported locales
-  validates :locale, inclusion: {
-    in: -> (user) { I18n.available_locales.map(&:to_s) },
-    message: I18n.t('activerecord.errors.models.user.attributes.locale.invalid',
-                   default: "is not a supported locale"),
-    allow_blank: true
-  }
-
   def master_admin?
     role.name == 'MasterAdmin'
   end
@@ -112,6 +104,16 @@ class User < ApplicationRecord
       settings_hash = user.settings.present? ? JSON.parse(user.settings) : {}
       settings_hash["noindex"] = value
       user.update_column(:settings, settings_hash.to_json)
+    end
+  end
+
+  def self.update_all_bluesky_bridge_enabled(value = false)
+    sanitized_value = !!value
+
+    if sanitized_value
+      where(did_value: nil).update_all(bluesky_bridge_enabled: true)
+    else
+      update_all(bluesky_bridge_enabled: sanitized_value)
     end
   end
 end

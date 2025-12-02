@@ -41,7 +41,7 @@ module CommunityHelper
     end
   end
 
-  def edit_community_path(channel_type_param, community)
+  def modify_community_path(channel_type_param, community)
     if channel_type_param == 'channel'
       step0_communities_path(id: community.id, channel_type: channel_type_param)
     else
@@ -148,14 +148,7 @@ module CommunityHelper
   private
 
   def default_domain
-    case ENV.fetch('RAILS_ENV', nil)
-    when 'staging'
-      'staging.patchwork.online'
-    when 'production'
-      'channel.org'
-    else
-      'localhost.3000'
-    end
+    ENV.fetch('LOCAL_DOMAIN', nil)
   end
 
   def valid_address?(community)

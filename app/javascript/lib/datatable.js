@@ -145,7 +145,7 @@ jQuery(function() {
   function toggleModalButtons(inputValue) {
     const closeButton = document.querySelector('#maxCharsModal .btn-secondary');
     const crossButton = document.querySelector('#maxCharsModal .close');
-    
+
     if (inputValue && inputValue.trim() !== '') {
       // Show buttons when input has value
       if (closeButton) closeButton.style.display = 'block';
@@ -177,16 +177,16 @@ jQuery(function() {
   // Update the existing modal show event handler
   $('#maxCharsModal').on('show.bs.modal', function() {
     const maxCharsInput = document.getElementById('max_chars_value');
-    
+
     // Initially hide buttons if no value
     toggleModalButtons(maxCharsInput ? maxCharsInput.value : '');
-    
+
     // Add event listener for input changes
     if (maxCharsInput) {
       maxCharsInput.addEventListener('input', function() {
         toggleModalButtons(this.value);
       });
-      
+
       // Also listen for keyup to catch all changes
       maxCharsInput.addEventListener('keyup', function() {
         toggleModalButtons(this.value);
@@ -198,7 +198,7 @@ jQuery(function() {
   $('#maxCharsModal').on('hidden.bs.modal', function() {
     const closeButton = document.querySelector('#maxCharsModal .btn-secondary');
     const crossButton = document.querySelector('#maxCharsModal .close');
-    
+
     // Reset to visible state for next time
     if (closeButton) closeButton.style.display = 'block';
     if (crossButton) crossButton.style.display = 'block';
@@ -207,7 +207,7 @@ jQuery(function() {
   function showModalIfNeeded(checkbox) {
     const settingName = checkbox.getAttribute('data-setting-name').toLowerCase();
 
-    if (settingName === 'long posts and markdown' && checkbox.checked) {
+    if (settingName === 'long posts' && checkbox.checked) {
       const optionalValue = checkbox.getAttribute('data-optional-value');
       const maxCharsInput = document.getElementById('max_chars_value');
       maxCharsInput.value = optionalValue || '';
@@ -232,7 +232,7 @@ jQuery(function() {
       const newValue = maxCharsInput ? maxCharsInput.value || '500' : '';
 
       const settingElement = Array.from(document.querySelectorAll('.setting-input'))
-        .find(el => el.getAttribute('data-setting-name').toLowerCase() === 'long posts and markdown');
+        .find(el => el.getAttribute('data-setting-name').toLowerCase() === 'long posts');
 
       if (settingElement) {
         const settingId = settingElement.getAttribute('data-setting-id');
@@ -431,10 +431,10 @@ jQuery(function() {
               previewImg.style.display = "block";
 
               const dataTransfer = new DataTransfer();
-              dataTransfer.items.add(new File([blob], "cropped-image.jpg", { type: "image/jpeg" }));
+              dataTransfer.items.add(new File([blob], "cropped-image.png", { type: "image/png" }));
               input.files = dataTransfer.files;
               document.body.removeChild(modal);
-            }, "image/jpeg");
+            }, "image/png");
           });
 
           closeButton.addEventListener("click", () => {

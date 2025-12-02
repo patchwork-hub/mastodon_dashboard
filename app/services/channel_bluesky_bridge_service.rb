@@ -56,7 +56,7 @@ class ChannelBlueskyBridgeService
   end
 
   def enable_bridge_bluesky?(account)
-    account&.username.present? && account&.display_name.present? && 
+    account&.username.present? && account&.display_name.present? &&
     account&.avatar.present? && account&.header.present?
   end
 
