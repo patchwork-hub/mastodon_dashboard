@@ -38,10 +38,11 @@ module ApplicationHelper
       links << { path: master_admins_path, id: 'master_admins-link', header: 'Master admin', icon: 'administrator.svg', text: 'Master admins', active_if: 'master_admins' }
 
       if is_channel_dashboard?
-        links << { path: community_filter_keywords_path(community_id: nil), id: 'global_filters-link', header: 'Global filters', icon: 'globe-white.svg', text: 'Global filters', active_if: 'global_filters' }
+        links << { path: community_filter_keywords_path(community_id: nil), id: 'global_filters-link', header: 'Global filters', icon: 'globe-white.svg', text: 'Global filters', active_if: 'community_filter_keywords' }
       end
       links += [
         # { path: accounts_path, id: 'accounts-link', header: 'Users', icon: 'users.svg', text: 'Users', active_if: 'accounts' },
+        { path: custom_emojis_path, id: 'custom-emojis-link', header: 'Custom emojis', icon: 'custom-emojis.svg', text: 'Custom emojis', active_if: 'custom_emojis' },
         { path: resources_path, id: 'resources-link', header: 'Resources', icon: 'folder.svg', text: 'Resources', active_if: 'resources' },
         { path: api_keys_path, id: 'resources-link', header: 'API Key', icon: 'key.svg', text: 'API Key', active_if: 'api_keys' }
       ]
@@ -59,27 +60,27 @@ module ApplicationHelper
       end
       links += [
         { path: "/sidekiq", id: 'sidekiq-link', header: 'Sidekiq', icon: 'smile-1.svg', text: 'Sidekiq', target: '_blank' },
-        { path: '#', id: 'help-support-link', header: 'Help & Support', icon: 'question.svg', text: 'Help & Support', active_if: 'help_support' }
+        { path: 'https://github.com/patchwork-hub/patchwork_dashboard/wiki', id: 'help-support-link', header: 'Help & Support', icon: 'question.svg', text: 'Help & Support', target: '_blank', active_if: 'help_support' }
       ]
     elsif organisation_admin?
       [
         { path: communities_path(channel_type: 'channel'), id: 'communities-link', header: 'Communities', icon: 'speech.svg', text: 'Communities', active_if: channel_active },
-        { path: '#', id: 'help-support-link', header: 'Help & Support', icon: 'question.svg', text: 'Help & Support', active_if: 'help_support' }
+        { path: 'https://github.com/patchwork-hub/patchwork_dashboard/wiki', id: 'help-support-link', header: 'Help & Support', icon: 'question.svg', text: 'Help & Support', target: '_blank', active_if: 'help_support' }
       ]
     elsif user_admin?
       [
         { path: communities_path(channel_type: 'channel_feed'), id: 'communities-link', header: 'Channels', icon: 'channel-feed.svg', text: 'Channels', active_if: channel_feed_active },
-        { path: '#', id: 'help-support-link', header: 'Help & Support', icon: 'question.svg', text: 'Help & Support', active_if: 'help_support' }
+        { path: 'https://github.com/patchwork-hub/patchwork_dashboard/wiki', id: 'help-support-link', header: 'Help & Support', icon: 'question.svg', text: 'Help & Support', target: '_blank', active_if: 'help_support' }
       ]
     elsif newsmast_admin?
       [
         { path: communities_path(channel_type: 'newsmast'), id: 'communities-link', header: 'Newsmast channels', icon: 'newsmast.svg', text: 'Newsmast channels', active_if: newsmast_active },
-        { path: '#', id: 'help-support-link', header: 'Help & Support', icon: 'question.svg', text: 'Help & Support', active_if: 'help_support' }
+        { path: 'https://github.com/patchwork-hub/patchwork_dashboard/wiki', id: 'help-support-link', header: 'Help & Support', icon: 'question.svg', text: 'Help & Support', target: '_blank', active_if: 'help_support' }
       ]
     else
       [
         { path: communities_path(channel_type: 'hub'), id: 'communities-link', header: 'Hubs', icon: 'hub.svg', text: 'Hubs', active_if: hub_active },
-        { path: '#', id: 'help-support-link', header: 'Help & Support', icon: 'question.svg', text: 'Help & Support', active_if: 'help_support' }
+        { path: 'https://github.com/patchwork-hub/patchwork_dashboard/wiki', id: 'help-support-link', header: 'Help & Support', icon: 'question.svg', text: 'Help & Support', target: '_blank', active_if: 'help_support' }
       ]
     end
   end
@@ -151,4 +152,29 @@ module ApplicationHelper
       false
     end
   end
+
+  def custom_emoji_tag(custom_emoji)
+    urls = emoji_asset_urls(custom_emoji)
+
+    image_tag(urls[:static], :class => 'emojione custom-emoji', :alt => ":#{custom_emoji.shortcode}", 'data-original' => full_asset_url(urls[:original]), 'data-static' => full_asset_url(urls[:static]))
+  end
+
+  def emoji_asset_urls(custom_emoji)
+    static_url = custom_emoji.image.url(:static)
+    original_url = custom_emoji.image.url
+
+    unless custom_emoji.local?
+      static_url = insert_cache_segment(static_url)
+      original_url = insert_cache_segment(original_url)
+    end
+
+    { static: static_url, original: original_url }
+  end
+
+  def insert_cache_segment(url)
+    return url if url.blank?
+    url.sub('/custom_emojis/', '/cache/custom_emojis/')
+  end
+
+  private :insert_cache_segment
 end

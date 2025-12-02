@@ -4,7 +4,7 @@ module BlueskyAccountBridgeHelper
     error_messages = []
     error_message = nil
     account = community&.community_admins&.first&.account
-    
+
     if account&.username.blank?
       error_messages << "username"
     end
@@ -24,7 +24,7 @@ module BlueskyAccountBridgeHelper
     if error_messages.any?
       error_message = "Your account is missing #{error_messages.join(', ')}."
     end
-    
+
     error_message
   end
 

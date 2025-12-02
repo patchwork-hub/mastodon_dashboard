@@ -10,6 +10,7 @@
       .card-body
         - @server_settings.each do |setting|
           - next if setting[:name] == 'Plug-ins'
+          - next if setting[:name].in?(["Federation", "User Management"]) && !is_channel_dashboard?
           .row.mb-4
             .col-md-5
               %div
@@ -32,6 +33,9 @@
                   - when 'Content Moderation'
                     %p.text-muted.small.mt-2 Control what content enters your server from the wider network by setting up keyword filters.
             .col-md-7
+              - if setting[:name] == 'Email Branding'
+                = render 'form_logo_and_brand_color'
+
               - setting[:settings].each_with_index do |option, option_index|
                 - is_collapse = ['Content filters', 'Spam filters'].include?(option[:name])
                 - collapse_id = "collapse_#{option[:id]}"
@@ -61,6 +65,8 @@
                           %a{ href: '#', style: 'color: red;', title: 'Add custom filter', 'data-filter-type': 'content', 'data-id': option[:id], 'data-toggle': 'modal', 'data-target': '#keyFilterModal', 'data-label': 'Custom filter name' }
                             Add custom filter
                     %div
+                      %a{ href: download_csv_by_server_setting_keyword_filter_groups_path(format: :csv, server_setting_id: option[:id]), title: 'Download CSV', 'data-turbo': false, style: 'color: red;' }
+                        %i.fa-solid.fa-download.mr-1
                       %a{ href: "##{collapse_id}", role: "button", class: "collapse-toggle arrow-toggle", 'data-toggle': "collapse", 'aria-expanded': "false", 'aria-controls': collapse_id }
                         %i.fa-solid.fa-caret-down.icon-arrow-down
                         %i.fa-solid.fa-caret-up.icon-arrow-up
@@ -82,6 +88,8 @@
                               %span.ml-2
                                 = sub_option[:name]
                             %div
+                              %a{ href: download_csv_keyword_filter_group_path(sub_option[:id], format: :csv), title: 'Download CSV', 'data-turbo': false, style: 'color: red;' }
+                                %i.fa-solid.fa-download.ml-2
                               %a{ href: keyword_filter_group_path(sub_option[:id]), title: 'Edit' }
                                 = image_tag("icons/edit-btn.svg", class: "ml-2", width: "16", height: "16")
                               - if sub_option[:is_custom]
@@ -112,11 +120,11 @@
                             = render 'shared/tooltip_custom', tooltip_text: 'Block posts from the microblogging platform Threads, owned by Meta & Instagram.', tooltip_position: 'top'
                           - when 'Custom theme'
                             = render 'shared/tooltip_custom', tooltip_text: 'Browse a variety of themes for your server’s Web interface to give it the flavour you want.', tooltip_position: 'top'
-                          - when 'Search opt-out'
+                          - when 'Automatic Search Opt-in'
                             = render 'shared/tooltip_custom', tooltip_text: 'Make all text within the server, including user’s posts and bios, visible to search. Users are able to opt-out if they choose.', tooltip_position: 'top'
                           - when 'Local only posts'
                             = render 'shared/tooltip_custom', tooltip_text: 'Allow users to publish posts just to your server, fostering a greater sense of channel.', tooltip_position: 'top'
-                          - when 'Long posts and markdown'
+                          - when 'Long posts'
                             = render 'shared/tooltip_custom', tooltip_text: 'Set character limits for posts and enable text formatting, including bold, italics & more.', tooltip_position: 'top'
                           - when 'Local quote posts'
                             = render 'shared/tooltip_custom', tooltip_text: 'Allow users to publish posts just to your server, fostering a greater sense of channel.', tooltip_position: 'top'
@@ -126,12 +134,14 @@
                             = render 'shared/tooltip_custom', tooltip_text: 'Foster a closer, more transparent connection with users on your server by sending regular, custom newsletters.', tooltip_position: 'top'
                           - when 'Analytics'
                             = render 'shared/tooltip_custom', tooltip_text: 'Understand your channel and optimise your server with non-intrusive analytics.', tooltip_position: 'top'
-                        - if option[:name].casecmp?('Long posts and markdown')
+                          - when 'Automatic Bluesky bridging for new users'
+                            = render 'shared/tooltip_custom', tooltip_text: 'Set up Bluesky Bridge accounts for all local users.', tooltip_position: 'top'
+                        - if option[:name].casecmp?('Long posts')
                           %br
                           %span.small{ style: 'color: grey;' }
                             Maximum Characters:
                             = option[:optional_value].presence || "Not Set"
-                            %a{ href: '#', title: 'Long posts and Markdown', 'data-toggle': 'modal', 'data-setting-id': option[:id], 'data-optional-value': option[:optional_value], 'data-target': '#maxCharsModal', onclick: "handleEditClick(this)" }
+                            %a{ href: '#', title: 'Long posts', 'data-toggle': 'modal', 'data-setting-id': option[:id], 'data-optional-value': option[:optional_value], 'data-target': '#maxCharsModal', onclick: "handleEditClick(this)" }
                               = image_tag("icons/edit-btn.svg", class: "mb-1", width: "13", height: "13")
                     %div
                       - case option[:name]
